@@ -11,7 +11,9 @@
    4. Open it → **Keys → Add key → Create new key → JSON**. A file downloads. Keep it private.
 4. Copy the robot's email (looks like `name@project.iam.gserviceaccount.com`) and **Share** the sheet with it as **Editor**.
 5. In GitHub, open the repo → **Settings → Secrets and variables → Actions → New repository secret**:
-   - `SHEET_ID`: the long code in the sheet's link, between `/d/` and `/edit`.
+   - `SHEET_ID`: open your Google Sheet and look at the web address at the top of the browser, e.g.
+     `https://docs.google.com/spreadsheets/d/1AbC2dEfGhIjKlMn0pQrStUvWxYz/edit#gid=0`.
+     Copy only the long code between `/d/` and `/edit` (here `1AbC2dEfGhIjKlMn0pQrStUvWxYz`).
    - `GOOGLE_SERVICE_ACCOUNT_JSON`: paste the whole contents of the downloaded JSON file.
 
 ## Using the sheet
