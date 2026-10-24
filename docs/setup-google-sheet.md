@@ -2,7 +2,8 @@
 
 1. Create a Google Sheet. Rename the first tab to **Posts**.
 2. Put these headings in row 1, one per column:
-   `id | status | post_at | platforms | text | media_url | result`
+   `id | status | post_at | platforms | text | media_url | result | sources`
+   (Or import a drafts file from `drafts/`: **File → Import → Upload → Replace current sheet**.)
 3. Create a robot account that can edit the sheet:
    1. Go to https://console.cloud.google.com/ and create a project (e.g. "MMM poster").
    2. Search for **Google Sheets API** and click **Enable**.
@@ -23,6 +24,7 @@
 | text | the post |
 | media_url | a public image link (needed for Instagram) |
 | result | leave empty: the tool writes the post links or the error here |
+| sources | optional: where each fact came from, so you can check before approving. The tool ignores it. |
 
 A `failed` row never retries by itself. Fix the problem, then set it back to `approved`.
 If a row is `failed` but some platforms show links in `result`, those already posted: remove them from `platforms` before re-approving, or they post twice.
