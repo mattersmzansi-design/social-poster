@@ -18,7 +18,8 @@ TIMEOUT = 60
 def _cfg(name: str) -> str:
     from . import NotConfigured
 
-    value = os.environ.get(name, "").strip()
+    # Tolerate values pasted with surrounding quotes or spaces, e.g. "1106...".
+    value = os.environ.get(name, "").strip().strip("'\"").strip()
     if not value:
         raise NotConfigured(f"{name} is not set")
     return value

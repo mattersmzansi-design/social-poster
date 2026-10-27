@@ -106,3 +106,8 @@ def test_parse_time_formats():
     assert parse_time("2026/10/27 19:00:00") == datetime(2026, 10, 27, 19, 0, tzinfo=SAST)
     assert parse_time("27/10/2026 19:00:00") == datetime(2026, 10, 27, 19, 0, tzinfo=SAST)
     assert parse_time("") is None
+
+
+def test_meta_secrets_tolerate_pasted_quotes(monkeypatch):
+    monkeypatch.setenv("META_PAGE_ID", ' "1106869425834996" ')
+    assert meta._cfg("META_PAGE_ID") == "1106869425834996"
