@@ -8,6 +8,9 @@ Columns (header row, in any order):
   text      - the post text
   media_url - optional public link to an image (required for Instagram)
   result    - filled in by the tool: post links or the error
+Optional:
+  image_title - headline for an auto-made branded image, e.g. "Inflation | Prices up 4.5%"
+  sources     - notes for you; ignored by the tool
 """
 from __future__ import annotations
 
@@ -31,6 +34,8 @@ class Post:
     platforms: list[str]
     text: str
     media_url: str
+    image_title: str = ""
+    image_png: bytes | None = None  # filled in at posting time when an image is generated
 
     def is_due(self, now: datetime) -> bool:
         return self.status == "approved" and self.post_at is not None and self.post_at <= now
@@ -78,6 +83,7 @@ def rows_to_posts(rows: list[list[str]]) -> list[Post]:
                 platforms=[p.strip().lower() for p in cell["platforms"].split(",") if p.strip()],
                 text=cell["text"],
                 media_url=cell["media_url"],
+                image_title=cell.get("image_title", ""),
             )
         )
     return posts

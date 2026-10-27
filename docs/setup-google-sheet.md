@@ -2,7 +2,7 @@
 
 1. Create a Google Sheet. Rename the first tab to **Posts**.
 2. Put these headings in row 1, one per column:
-   `id | status | post_at | platforms | text | media_url | result | sources`
+   `id | status | post_at | platforms | text | media_url | result | sources | image_title`
    (Or import a drafts file from `drafts/`: **File → Import → Upload → Replace current sheet**.)
 3. Create a robot account that can edit the sheet:
    1. Go to https://console.cloud.google.com/ and create a project (e.g. "MMM poster").
@@ -26,6 +26,7 @@
 | text | the post |
 | media_url | a public image link (needed for Instagram) |
 | result | leave empty: the tool writes the post links or the error here |
+| image_title | optional: headline for an automatic branded image, e.g. `Rates \| Prime is now 10.75%`. See [images](images.md). |
 | sources | optional: where each fact came from, so you can check before approving. The tool ignores it. |
 
 A `failed` row never retries by itself. Fix the problem, then set it back to `approved`.

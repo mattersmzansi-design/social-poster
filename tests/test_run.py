@@ -7,7 +7,7 @@ from social_poster import run
 from social_poster.platforms import meta
 from social_poster.queue import SAST, CsvQueue, parse_time
 
-HEADER = ["id", "status", "post_at", "platforms", "text", "media_url", "result"]
+HEADER = ["id", "status", "post_at", "platforms", "text", "media_url", "result", "image_title"]
 NOW = datetime(2026, 10, 21, 9, 0, tzinfo=SAST)
 
 
@@ -31,7 +31,10 @@ def fake_meta(monkeypatch):
         return {"id": f"id-for-{path.split('/')[-1]}"}
 
     monkeypatch.setattr(meta, "_graph", fake_graph)
-    monkeypatch.setattr(meta, "_get", lambda *a, **k: {"permalink": "https://instagram.com/p/abc"})
+    monkeypatch.setattr(meta, "_get", lambda *a, **k: {
+        "permalink": "https://instagram.com/p/abc",
+        "images": [{"width": 720, "source": "https://cdn/small.png"}, {"width": 1080, "source": "https://cdn/big.png"}],
+    })
     monkeypatch.setenv("META_PAGE_ID", "123")
     monkeypatch.setenv("META_PAGE_TOKEN", "tok")
     monkeypatch.setenv("META_IG_USER_ID", "456")
@@ -67,13 +70,24 @@ def test_instagram_uses_container_then_publish(tmp_path, fake_meta):
     assert statuses(q)["a"] == ("posted", "instagram: https://instagram.com/p/abc")
 
 
-def test_instagram_without_image_fails_but_facebook_still_posts(tmp_path, fake_meta):
-    q = make_queue(tmp_path, [["a", "approved", "2026-10-21 08:30", "facebook, instagram", "hi", "", ""]])
+def test_instagram_without_image_gets_a_generated_one(tmp_path, fake_meta):
+    q = make_queue(tmp_path, [["a", "approved", "2026-10-21 08:30", "instagram", "Inflation up 📈\nmore", "", ""]])
     run.main([], now=NOW, queue=q)
-    status, result = statuses(q)["a"]
-    assert status == "failed"
-    assert "facebook: https://www.facebook.com/" in result
-    assert "instagram: FAILED Instagram needs an image" in result
+    paths = [c[0] for c in fake_meta]
+    assert paths == ["123/photos", "456/media", "456/media_publish"]
+    assert fake_meta[0][1]["published"] == "false"  # hidden upload, only used as Instagram's image link
+    assert fake_meta[1][1]["image_url"] == "https://cdn/big.png"
+    assert statuses(q)["a"][0] == "posted"
+
+
+def test_image_title_makes_facebook_post_a_photo(tmp_path, fake_meta):
+    q = make_queue(tmp_path, [["a", "approved", "2026-10-21 08:30", "facebook", "hello", "", "", "Rates | Prime is 10.75%"]])
+    run.main([], now=NOW, queue=q)
+    path, params = fake_meta[0]
+    assert path == "123/photos"
+    assert params["message"] == "hello"
+    name, png, mime = params["files"]["source"]
+    assert png.startswith(b"\x89PNG") and mime == "image/png"
 
 
 def test_missing_secrets_and_planned_platforms_are_reported(tmp_path, monkeypatch):
@@ -111,3 +125,15 @@ def test_parse_time_formats():
 def test_meta_secrets_tolerate_pasted_quotes(monkeypatch):
     monkeypatch.setenv("META_PAGE_ID", ' "1106869425834996" ')
     assert meta._cfg("META_PAGE_ID") == "1106869425834996"
+
+
+def test_render_card_is_square_png_and_drops_emoji():
+    import io
+    from PIL import Image
+    from social_poster.images import clean_title, render_card
+
+    assert clean_title("Inflation up 📈 to 4.5% 🇿🇦") == "Inflation up to 4.5%"
+    img = Image.open(io.BytesIO(render_card("Fuel | Petrol price on Wednesday ⛽")))
+    assert img.size == (1080, 1080)
+    with pytest.raises(ValueError):
+        render_card("📈")

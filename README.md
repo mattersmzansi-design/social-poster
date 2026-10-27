@@ -16,7 +16,7 @@ Nothing is ever posted unless its row says `approved`.
 | platform | status |
 |---|---|
 | Facebook Page | ready |
-| Instagram (Business/Creator) | ready, image posts |
+| Instagram (Business/Creator) | ready: branded images are made automatically ([images](docs/images.md)) |
 | LinkedIn | next |
 | X | next |
 | YouTube | planned |

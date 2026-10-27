@@ -9,6 +9,7 @@ import argparse
 import sys
 from datetime import datetime
 
+from .images import render_card
 from .platforms import PLANNED, PUBLISHERS, NotConfigured
 from .queue import SAST, queue_from_env
 
@@ -19,6 +20,12 @@ def publish_post(post) -> tuple[str, str]:
         return "failed", "no platforms listed"
     if not post.text and not post.media_url:
         return "failed", "nothing to post: text and media_url are both empty"
+    if not post.media_url and (post.image_title or "instagram" in post.platforms):
+        title = post.image_title or post.text.strip().splitlines()[0]
+        try:
+            post.image_png = render_card(title)
+        except Exception as e:
+            return "failed", f"image: could not make it ({e})"
     results, ok = [], True
     for name in post.platforms:
         publisher = PUBLISHERS.get(name)
