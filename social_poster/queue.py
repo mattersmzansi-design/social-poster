@@ -40,7 +40,12 @@ def parse_time(value: str) -> datetime | None:
     value = value.strip()
     if not value:
         return None
-    for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M", "%d/%m/%Y %H:%M"):
+    # Google Sheets reformats typed dates by locale, often adding seconds.
+    for fmt in (
+        "%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S",
+        "%Y/%m/%d %H:%M", "%Y/%m/%d %H:%M:%S",
+        "%d/%m/%Y %H:%M", "%d/%m/%Y %H:%M:%S",
+    ):
         try:
             return datetime.strptime(value, fmt).replace(tzinfo=SAST)
         except ValueError:

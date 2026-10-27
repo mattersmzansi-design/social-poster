@@ -103,4 +103,6 @@ def test_bad_date_on_approved_row_is_flagged(tmp_path, fake_meta):
 def test_parse_time_formats():
     assert parse_time("2026-10-21 08:30") == datetime(2026, 10, 21, 8, 30, tzinfo=SAST)
     assert parse_time("21/10/2026 08:30") == datetime(2026, 10, 21, 8, 30, tzinfo=SAST)
+    assert parse_time("2026/10/27 19:00:00") == datetime(2026, 10, 27, 19, 0, tzinfo=SAST)
+    assert parse_time("27/10/2026 19:00:00") == datetime(2026, 10, 27, 19, 0, tzinfo=SAST)
     assert parse_time("") is None
