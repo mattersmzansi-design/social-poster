@@ -4,7 +4,7 @@ Secrets:
   META_PAGE_ID            - the Facebook Page's numeric ID
   META_PAGE_TOKEN         - a long-lived Page access token
   META_IG_USER_ID         - the Instagram account ID linked to that Page (Instagram only)
-  META_GRAPH_VERSION      - optional, e.g. v23.0
+  META_GRAPH_VERSION      - optional, e.g. v26.0
 """
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ def _cfg(name: str) -> str:
 def _graph(path: str, **params) -> dict:
     from . import PlatformError
 
-    version = os.environ.get("META_GRAPH_VERSION", "v23.0")
+    version = os.environ.get("META_GRAPH_VERSION", "v26.0")
     params["access_token"] = _cfg("META_PAGE_TOKEN")
     resp = requests.post(f"https://graph.facebook.com/{version}/{path}", data=params, timeout=TIMEOUT)
     body = resp.json() if resp.content else {}
@@ -38,7 +38,7 @@ def _graph(path: str, **params) -> dict:
 
 
 def _get(path: str, **params) -> dict:
-    version = os.environ.get("META_GRAPH_VERSION", "v23.0")
+    version = os.environ.get("META_GRAPH_VERSION", "v26.0")
     params["access_token"] = _cfg("META_PAGE_TOKEN")
     resp = requests.get(f"https://graph.facebook.com/{version}/{path}", params=params, timeout=TIMEOUT)
     return resp.json() if resp.ok else {}

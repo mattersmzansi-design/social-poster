@@ -11,7 +11,7 @@ import sys
 
 import requests
 
-GRAPH = "https://graph.facebook.com/v23.0"
+GRAPH = "https://graph.facebook.com/v26.0"
 
 
 def main(app_id: str, app_secret: str, short_token: str) -> None:
