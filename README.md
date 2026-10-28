@@ -12,6 +12,9 @@ GitHub Actions, every hour ──► posts due rows ──► writes links back 
 
 Nothing is ever posted unless its row says `approved`.
 
+New drafts arrive by themselves every weekend: see [weekly drafts](docs/weekly-drafts.md).
+Posts can be single images or [carousels](docs/images.md#carousels-several-slides).
+
 ## Platforms
 | platform | status |
 |---|---|

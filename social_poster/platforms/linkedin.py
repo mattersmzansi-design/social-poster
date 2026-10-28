@@ -13,11 +13,12 @@ import re
 
 import requests
 
-from .media import image_bytes
+from .media import images
 
 API = "https://api.linkedin.com"
 TIMEOUT = 60
 RESERVED = set("\\|{}@[]()<>#*_~")
+MAX_IMAGES = 20
 
 
 def _cfg(name: str, default: str | None = None) -> str:
@@ -91,9 +92,15 @@ def publish_linkedin(post) -> str:
         "lifecycleState": "PUBLISHED",
         "isReshareDisabledByAuthor": False,
     }
-    media = image_bytes(post)
-    if media:
-        body["content"] = {"media": {"id": _upload_image(author, media[0]), "altText": post.image_title or "Mzansi Money Matters"}}
+    alt = post.image_title or "Mzansi Money Matters"
+    uploaded = [_upload_image(author, data) for data, _ in images(post)[:MAX_IMAGES]]
+    if len(uploaded) == 1:
+        body["content"] = {"media": {"id": uploaded[0], "altText": alt}}
+    elif uploaded:
+        slide_alts = post.slides or [alt] * len(uploaded)
+        body["content"] = {"multiImage": {"images": [
+            {"id": urn, "altText": a.replace("|", "-")} for urn, a in zip(uploaded, slide_alts)
+        ]}}
     resp = _check(requests.post(f"{API}/rest/posts", headers=_headers(), json=body, timeout=TIMEOUT))
     urn = resp.headers.get("x-restli-id", "")
     return f"https://www.linkedin.com/feed/update/{urn}/" if urn else "posted (LinkedIn returned no link)"

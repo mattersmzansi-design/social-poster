@@ -15,10 +15,11 @@ import os
 
 import requests
 
-from .media import image_bytes
+from .media import images
 
 API = "https://api.x.com/2"
 LIMIT = 280
+MAX_IMAGES = 4  # X's limit; longer carousels post their first 4 slides
 TIMEOUT = 60
 
 
@@ -94,14 +95,15 @@ def publish_x(post) -> str:
         raise PlatformError(f"x_text is too long for X ({weighted_length(text)}/{LIMIT})")
     payload: dict = {"text": text}
 
-    media = image_bytes(post)
-    if media:
-        data, mime = media
+    media_ids = []
+    for data, mime in images(post)[:MAX_IMAGES]:
         uploaded = _check(requests.post(
             f"{API}/media/upload", auth=auth, timeout=TIMEOUT,
             files={"media": ("post", data, mime)}, data={"media_category": "tweet_image"},
         ))
-        payload["media"] = {"media_ids": [uploaded["data"]["id"]]}
+        media_ids.append(uploaded["data"]["id"])
+    if media_ids:
+        payload["media"] = {"media_ids": media_ids}
 
     created = _check(requests.post(f"{API}/tweets", auth=auth, json=payload, timeout=TIMEOUT))
     return f"https://x.com/i/status/{created['data']['id']}"

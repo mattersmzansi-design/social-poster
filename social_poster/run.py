@@ -9,9 +9,25 @@ import argparse
 import sys
 from datetime import datetime
 
+from .drafts import import_drafts
 from .images import render_card
 from .platforms import PLANNED, PUBLISHERS, NotConfigured
 from .queue import SAST, queue_from_env
+
+
+MAX_SLIDES = 10
+
+
+def make_images(post) -> list[bytes]:
+    """Carousel slides, or one card, or nothing (media_url / text-only posts)."""
+    if post.slides:
+        if len(post.slides) > MAX_SLIDES:
+            raise ValueError(f"{len(post.slides)} slides; the most a carousel takes is {MAX_SLIDES}")
+        n = len(post.slides)
+        return [render_card(s, page=i + 1, total=n) for i, s in enumerate(post.slides)]
+    if not post.media_url and (post.image_title or "instagram" in post.platforms):
+        return [render_card(post.image_title or post.text.strip().splitlines()[0])]
+    return []
 
 
 def publish_post(post) -> tuple[str, str]:
@@ -20,12 +36,10 @@ def publish_post(post) -> tuple[str, str]:
         return "failed", "no platforms listed"
     if not post.text and not post.media_url:
         return "failed", "nothing to post: text and media_url are both empty"
-    if not post.media_url and (post.image_title or "instagram" in post.platforms):
-        title = post.image_title or post.text.strip().splitlines()[0]
-        try:
-            post.image_png = render_card(title)
-        except Exception as e:
-            return "failed", f"image: could not make it ({e})"
+    try:
+        post.images = make_images(post)
+    except Exception as e:
+        return "failed", f"image: could not make it ({e})"
     results, ok = [], True
     for name in post.platforms:
         publisher = PUBLISHERS.get(name)
@@ -48,10 +62,13 @@ def publish_post(post) -> tuple[str, str]:
 def main(argv: list[str] | None = None, now: datetime | None = None, queue=None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--import-drafts", metavar="FOLDER", help="first add new draft files from FOLDER to the sheet")
     args = parser.parse_args(argv)
 
     now = now or datetime.now(SAST)
     queue = queue or queue_from_env()
+    if args.import_drafts:
+        import_drafts(queue, args.import_drafts, dry_run=args.dry_run)
     posts = queue.load()
 
     for post in posts:

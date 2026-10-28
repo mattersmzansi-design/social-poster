@@ -8,6 +8,7 @@ Secrets:
 """
 from __future__ import annotations
 
+import json
 import os
 import time
 
@@ -46,17 +47,21 @@ def _get(path: str, **params) -> dict:
     return resp.json() if resp.ok else {}
 
 
-def _png(post) -> dict:
-    return {"source": ("post.png", post.image_png, "image/png")}
+def _png(png: bytes) -> dict:
+    return {"source": ("post.png", png, "image/png")}
 
 
-def _host_image(post) -> str:
+def _upload_unpublished(png: bytes) -> str:
+    """Upload to the Page without showing it to followers; returns the photo id."""
+    return _graph(f"{_cfg('META_PAGE_ID')}/photos", files=_png(png), published="false")["id"]
+
+
+def _host_image(png: bytes) -> str:
     """Instagram fetches images by URL, so upload the generated image to the Page
     unpublished (invisible to followers) and hand Instagram Meta's own link to it."""
     from . import PlatformError
 
-    photo_id = _graph(f"{_cfg('META_PAGE_ID')}/photos", files=_png(post), published="false")["id"]
-    images = _get(photo_id, fields="images").get("images") or []
+    images = _get(_upload_unpublished(png), fields="images").get("images") or []
     if not images:
         raise PlatformError("uploaded the image but Meta returned no link to it")
     return max(images, key=lambda i: i.get("width", 0))["source"]
@@ -64,8 +69,12 @@ def _host_image(post) -> str:
 
 def publish_facebook(post) -> str:
     page_id = _cfg("META_PAGE_ID")
-    if post.image_png and not post.media_url:
-        body = _graph(f"{page_id}/photos", files=_png(post), message=post.text)
+    if len(post.images) > 1:
+        photo_ids = [_upload_unpublished(png) for png in post.images]
+        attached = {f"attached_media[{i}]": json.dumps({"media_fbid": pid}) for i, pid in enumerate(photo_ids)}
+        post_id = _graph(f"{page_id}/feed", message=post.text, **attached)["id"]
+    elif post.images and not post.media_url:
+        body = _graph(f"{page_id}/photos", files=_png(post.images[0]), message=post.text)
         post_id = body.get("post_id") or body["id"]
     elif post.media_url:
         body = _graph(f"{page_id}/photos", url=post.media_url, message=post.text)
@@ -78,14 +87,21 @@ def publish_facebook(post) -> str:
 def publish_instagram(post) -> str:
     from . import PlatformError
 
-    if post.media_url:
-        image_url = post.media_url
-    elif post.image_png:
-        image_url = _host_image(post)
-    else:
-        raise PlatformError("Instagram needs an image: fill in image_title or media_url")
     ig_user = _cfg("META_IG_USER_ID")
-    container = _graph(f"{ig_user}/media", image_url=image_url, caption=post.text)["id"]
+    if len(post.images) > 1:
+        children = [
+            _graph(f"{ig_user}/media", image_url=_host_image(png), is_carousel_item="true")["id"]
+            for png in post.images
+        ]
+        container = _graph(f"{ig_user}/media", media_type="CAROUSEL", children=",".join(children), caption=post.text)["id"]
+    else:
+        if post.media_url:
+            image_url = post.media_url
+        elif post.images:
+            image_url = _host_image(post.images[0])
+        else:
+            raise PlatformError("Instagram needs an image: fill in image_title, slides or media_url")
+        container = _graph(f"{ig_user}/media", image_url=image_url, caption=post.text)["id"]
     # Instagram may still be fetching the image; give it a few short retries.
     for attempt in range(4):
         try:

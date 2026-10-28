@@ -31,3 +31,15 @@ python -m social_poster.images "Interest rates | What the hike means for your bo
    (GitHub → `assets` folder → Add file → Upload files).
 
 From then on every image uses your template. Delete the file to go back to the built-in design.
+
+## Carousels (several slides)
+Add a column **slides** and list the slides separated by `||`, each written like an `image_title`:
+
+```
+MTBPS 2026 | The budget in 4 slides || Fuel | Levy cut from 4 November || Growth | Forecast cut to 1.2% || Spending | More for health and education
+```
+
+- 2 to 10 slides. Each gets a `2 / 4 →` marker so people know to swipe.
+- **Instagram** and **Facebook** post all slides; **LinkedIn** posts them as a multi-image post;
+  **X** takes the first 4 (its limit).
+- When `slides` is filled in, `image_title` is not used.

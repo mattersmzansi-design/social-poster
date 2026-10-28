@@ -222,3 +222,105 @@ def test_linkedin_posts_with_image(tmp_path, monkeypatch):
     assert post_body["author"] == "urn:li:person:abc"
     assert post_body["content"]["media"]["id"] == "urn:li:image:1"
     assert ("PUT", "https://up") in calls
+
+
+SLIDES = "MTBPS 2026 | The budget in 3 slides || Fuel | Levy cut from 4 November || Growth | Forecast cut to 1.2%"
+
+
+def make_slides_queue(tmp_path, platforms, slides=SLIDES):
+    path = tmp_path / "queue.csv"
+    with open(path, "w", newline="") as f:
+        csv.writer(f).writerows([HEADER + ["slides"], ["a", "approved", "2026-10-21 08:30", platforms, "Caption", "", "", "", slides]])
+    return CsvQueue(str(path))
+
+
+def test_carousel_facebook_attaches_all_slides(tmp_path, fake_meta):
+    q = make_slides_queue(tmp_path, "facebook")
+    run.main([], now=NOW, queue=q)
+    paths = [c[0] for c in fake_meta]
+    assert paths == ["123/photos"] * 3 + ["123/feed"]
+    assert all(c[1]["published"] == "false" for c in fake_meta[:3])
+    feed = fake_meta[3][1]
+    assert feed["message"] == "Caption" and "attached_media[2]" in feed
+    assert statuses(q)["a"][0] == "posted"
+
+
+def test_carousel_instagram_builds_children_then_carousel(tmp_path, fake_meta):
+    q = make_slides_queue(tmp_path, "instagram")
+    run.main([], now=NOW, queue=q)
+    media_calls = [c for c in fake_meta if c[0] == "456/media"]
+    assert [c[1].get("is_carousel_item") for c in media_calls[:3]] == ["true"] * 3
+    carousel = media_calls[3][1]
+    assert carousel["media_type"] == "CAROUSEL" and carousel["children"].count(",") == 2
+    assert fake_meta[-1][0] == "456/media_publish"
+    assert statuses(q)["a"][0] == "posted"
+
+
+def test_carousel_with_too_many_slides_fails_before_posting(tmp_path, fake_meta):
+    q = make_slides_queue(tmp_path, "facebook", " || ".join(f"Slide {i}" for i in range(11)))
+    run.main([], now=NOW, queue=q)
+    status, result = statuses(q)["a"]
+    assert status == "failed" and "most a carousel takes is 10" in result
+    assert fake_meta == []
+
+
+def test_carousel_x_uploads_at_most_four(tmp_path, monkeypatch):
+    from social_poster.platforms import x
+
+    for k in ("X_API_KEY", "X_API_SECRET", "X_ACCESS_TOKEN", "X_ACCESS_TOKEN_SECRET"):
+        monkeypatch.setenv(k, "v")
+    uploads = []
+
+    def fake_post(url, **kw):
+        if url.endswith("/media/upload"):
+            uploads.append(1)
+            return FakeResp(200, {"data": {"id": f"m{len(uploads)}"}})
+        assert kw["json"]["media"]["media_ids"] == ["m1", "m2", "m3", "m4"]
+        return FakeResp(201, {"data": {"id": "t1"}})
+
+    monkeypatch.setattr(x.requests, "post", fake_post)
+    q = make_slides_queue(tmp_path, "x", " || ".join(f"Slide {i}" for i in range(6)))
+    run.main([], now=NOW, queue=q)
+    assert len(uploads) == 4 and statuses(q)["a"][0] == "posted"
+
+
+def test_carousel_linkedin_uses_multi_image(tmp_path, monkeypatch):
+    from social_poster.platforms import linkedin
+
+    monkeypatch.setenv("LINKEDIN_ACCESS_TOKEN", "tok")
+    monkeypatch.setenv("LINKEDIN_AUTHOR", "urn:li:person:abc")
+    bodies, n = [], iter(range(100))
+    monkeypatch.setattr(linkedin.requests, "put", lambda url, **kw: FakeResp(201))
+
+    def fake_post(url, **kw):
+        if "initializeUpload" in url:
+            return FakeResp(200, {"value": {"uploadUrl": "https://up", "image": f"urn:li:image:{next(n)}"}})
+        bodies.append(kw["json"])
+        return FakeResp(201, {}, {"x-restli-id": "urn:li:share:9"})
+
+    monkeypatch.setattr(linkedin.requests, "post", fake_post)
+    q = make_slides_queue(tmp_path, "linkedin")
+    run.main([], now=NOW, queue=q)
+    imgs = bodies[0]["content"]["multiImage"]["images"]
+    assert [i["id"] for i in imgs] == ["urn:li:image:0", "urn:li:image:1", "urn:li:image:2"]
+    assert statuses(q)["a"][0] == "posted"
+
+
+def test_import_drafts_adds_new_rows_once_as_draft(tmp_path, fake_meta):
+    q = make_queue(tmp_path, [["keep", "posted", "2026-10-20 08:00", "facebook", "old", "", "x"]])
+    drafts = tmp_path / "drafts"
+    drafts.mkdir()
+    with open(drafts / "week.csv", "w", newline="") as f:
+        csv.writer(f).writerows([
+            ["id", "status", "post_at", "platforms", "text", "slides"],
+            ["keep", "approved", "2026-10-21 08:00", "facebook", "dupe", ""],
+            ["new1", "approved", "2026-10-21 08:00", "facebook", "fresh", "A || B"],
+        ])
+    run.main(["--import-drafts", str(drafts)], now=NOW, queue=q)
+    posts = {p.id: p for p in q.load()}
+    assert posts["keep"].text == "old"  # existing id untouched
+    assert posts["new1"].status == "draft"  # never arrives approved, so nothing posted
+    assert posts["new1"].slides == ["A", "B"]
+    assert fake_meta == []
+    run.main(["--import-drafts", str(drafts)], now=NOW, queue=q)
+    assert [p.id for p in q.load()].count("new1") == 1

@@ -100,8 +100,9 @@ def _background() -> Image.Image:
     return img
 
 
-def render_card(title: str) -> bytes:
-    """title: 'Headline' or 'Kicker | Headline'. Returns PNG bytes."""
+def render_card(title: str, page: int | None = None, total: int | None = None) -> bytes:
+    """title: 'Headline' or 'Kicker | Headline'. page/total add a "2 / 5" marker for carousels.
+    Returns PNG bytes."""
     kicker, _, headline = title.partition("|") if "|" in title else ("", "", title)
     kicker, headline = clean_title(kicker).upper(), clean_title(headline)
     if not headline:
@@ -110,8 +111,19 @@ def render_card(title: str) -> bytes:
     img = _background()
     draw = ImageDraw.Draw(img)
     left, top, right, bottom = HEADLINE_BOX
+    if total and total > 1:
+        marker = f"{page} / {total}"
+        mfont = _font("SemiBold", 30)
+        arrow = 44 if page < total else 0  # drawn, since the font has no arrow glyph
+        x = right - arrow - draw.textlength(marker, font=mfont)
+        draw.text((x, top + 2), marker, font=mfont, fill=LIGHT_GOLD)
+        if arrow:
+            cy, x0, x1 = top + 22, right - 30, right
+            draw.line([(x0, cy), (x1, cy)], fill=LIGHT_GOLD, width=4)
+            draw.line([(x1 - 11, cy - 10), (x1, cy), (x1 - 11, cy + 10)], fill=LIGHT_GOLD, width=4, joint="curve")
     if kicker:
         draw.text((left, top), kicker, font=_font("SemiBold", 34), fill=GOLD)
+    if kicker or (total and total > 1):
         top += 70
     font, lines, line_height = _fit_headline(draw, headline, right - left, bottom - top)
     for i, line in enumerate(lines):
