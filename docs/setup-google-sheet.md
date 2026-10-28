@@ -22,11 +22,12 @@
 | id | anything unique, e.g. `2026-10-21-a` |
 | status | `draft` while editing. Change to `approved` when it may go out. The tool sets `posting`, `posted` or `failed`. |
 | post_at | South African time, e.g. `2026-10-21 08:30` |
-| platforms | e.g. `facebook, instagram` |
+| platforms | any of `facebook, instagram, x, linkedin` |
 | text | the post |
 | media_url | a public image link (needed for Instagram) |
 | result | leave empty: the tool writes the post links or the error here |
 | image_title | optional: headline for an automatic branded image, e.g. `Rates \| Prime is now 10.75%`. See [images](images.md). |
+| x_text | optional: your own X version (280 characters). Made from `text` if empty. |
 | sources | optional: where each fact came from, so you can check before approving. The tool ignores it. |
 
 A `failed` row never retries by itself. Fix the problem, then set it back to `approved`.

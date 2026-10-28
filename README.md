@@ -17,15 +17,16 @@ Nothing is ever posted unless its row says `approved`.
 |---|---|
 | Facebook Page | ready |
 | Instagram (Business/Creator) | ready: branded images are made automatically ([images](docs/images.md)) |
-| LinkedIn | next |
-| X | next |
+| LinkedIn (personal profile) | ready: [setup](docs/setup-linkedin.md). Token renews every 60 days |
+| X | ready: [setup](docs/setup-x.md). Paid per post by X |
 | YouTube | planned |
 | TikTok | planned (TikTok must review the app before posts can be public) |
 
 ## Setup
 1. [Google Sheet queue](docs/setup-google-sheet.md)
 2. [Facebook + Instagram](docs/setup-meta.md)
-3. Test it: repo → **Actions → Post approved content → Run workflow**, tick *dry run*.
+3. [X](docs/setup-x.md) and [LinkedIn](docs/setup-linkedin.md) (optional)
+4. Test it: repo → **Actions → Post approved content → Run workflow**, tick *dry run*.
    The log lists what would post, without posting.
 
 ## Running locally

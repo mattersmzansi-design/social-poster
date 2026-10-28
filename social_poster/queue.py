@@ -10,6 +10,7 @@ Columns (header row, in any order):
   result    - filled in by the tool: post links or the error
 Optional:
   image_title - headline for an auto-made branded image, e.g. "Inflation | Prices up 4.5%"
+  x_text      - short version for X (280 characters); made from `text` if empty
   sources     - notes for you; ignored by the tool
 """
 from __future__ import annotations
@@ -35,6 +36,7 @@ class Post:
     text: str
     media_url: str
     image_title: str = ""
+    x_text: str = ""
     image_png: bytes | None = None  # filled in at posting time when an image is generated
 
     def is_due(self, now: datetime) -> bool:
@@ -84,6 +86,7 @@ def rows_to_posts(rows: list[list[str]]) -> list[Post]:
                 text=cell["text"],
                 media_url=cell["media_url"],
                 image_title=cell.get("image_title", ""),
+                x_text=cell.get("x_text", ""),
             )
         )
     return posts

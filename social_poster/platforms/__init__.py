@@ -5,7 +5,7 @@ whose secrets are not set yet is simply reported as "not set up" for that row.
 """
 from __future__ import annotations
 
-from . import meta
+from . import linkedin, meta, x
 
 
 class PlatformError(Exception):
@@ -19,6 +19,8 @@ class NotConfigured(PlatformError):
 PUBLISHERS = {
     "facebook": meta.publish_facebook,
     "instagram": meta.publish_instagram,
+    "x": x.publish_x,
+    "linkedin": linkedin.publish_linkedin,
 }
 
-PLANNED = {"x", "linkedin", "youtube", "tiktok"}
+PLANNED = {"youtube", "tiktok"}

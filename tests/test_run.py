@@ -92,12 +92,12 @@ def test_image_title_makes_facebook_post_a_photo(tmp_path, fake_meta):
 
 def test_missing_secrets_and_planned_platforms_are_reported(tmp_path, monkeypatch):
     monkeypatch.delenv("META_PAGE_ID", raising=False)
-    q = make_queue(tmp_path, [["a", "approved", "2026-10-21 08:30", "facebook, x", "hi", "", ""]])
+    q = make_queue(tmp_path, [["a", "approved", "2026-10-21 08:30", "facebook, tiktok", "hi", "", ""]])
     run.main([], now=NOW, queue=q)
     status, result = statuses(q)["a"]
     assert status == "failed"
     assert "facebook: not set up (META_PAGE_ID is not set)" in result
-    assert "x: coming soon" in result
+    assert "tiktok: coming soon" in result
 
 
 def test_dry_run_changes_nothing(tmp_path, fake_meta):
@@ -137,3 +137,88 @@ def test_render_card_is_square_png_and_drops_emoji():
     assert img.size == (1080, 1080)
     with pytest.raises(ValueError):
         render_card("📈")
+
+
+class FakeResp:
+    def __init__(self, status=200, body=None, headers=None):
+        self.status_code, self._body, self.headers = status, body or {}, headers or {}
+        self.content = b"x"
+        self.ok = status < 400
+        self.text = str(body)
+
+    def json(self):
+        return self._body
+
+
+def test_x_shortens_long_text_and_keeps_hashtags():
+    from social_poster.platforms.x import LIMIT, shorten, weighted_length
+
+    text = "Headline 📈\n\n" + "word " * 80 + "\n\n#MzansiMoneyMatters #Inflation"
+    short = shorten(text)
+    assert weighted_length(short) <= LIMIT
+    assert short.startswith("Headline") and short.endswith("#MzansiMoneyMatters #Inflation")
+    assert weighted_length(shorten("x" * 400)) <= LIMIT
+    lead_in = "Budget in 60 seconds\n\nHere's what matters:\n\n" + "item " * 70 + "\n\n#MMM"
+    assert shorten(lead_in) == "Budget in 60 seconds\n\n#MMM"
+
+
+def test_x_posts_with_uploaded_image(tmp_path, monkeypatch):
+    from social_poster.platforms import x
+
+    for k in ("X_API_KEY", "X_API_SECRET", "X_ACCESS_TOKEN", "X_ACCESS_TOKEN_SECRET"):
+        monkeypatch.setenv(k, "v")
+    calls = []
+
+    def fake_post(url, **kw):
+        calls.append((url, kw))
+        if url.endswith("/media/upload"):
+            return FakeResp(200, {"data": {"id": "m1"}})
+        return FakeResp(201, {"data": {"id": "t1"}})
+
+    monkeypatch.setattr(x.requests, "post", fake_post)
+    q = make_queue(tmp_path, [["a", "approved", "2026-10-21 08:30", "x", "Hello\n\n#MMM", "", "", "Rates | Prime 10.75%"]])
+    run.main([], now=NOW, queue=q)
+    assert statuses(q)["a"] == ("posted", "x: https://x.com/i/status/t1")
+    assert calls[1][1]["json"] == {"text": "Hello\n\n#MMM", "media": {"media_ids": ["m1"]}}
+
+
+def test_x_error_is_reported(tmp_path, monkeypatch):
+    from social_poster.platforms import x
+
+    for k in ("X_API_KEY", "X_API_SECRET", "X_ACCESS_TOKEN", "X_ACCESS_TOKEN_SECRET"):
+        monkeypatch.setenv(k, "v")
+    monkeypatch.setattr(x.requests, "post", lambda url, **kw: FakeResp(402, {"title": "CreditsDepleted"}))
+    q = make_queue(tmp_path, [["a", "approved", "2026-10-21 08:30", "x", "Hello", "", ""]])
+    run.main([], now=NOW, queue=q)
+    assert statuses(q)["a"] == ("failed", "x: FAILED X said (402): CreditsDepleted")
+
+
+def test_linkedin_little_text_escaping():
+    from social_poster.platforms.linkedin import to_little_text
+
+    assert to_little_text("Prime (10.75%) #MzansiMoneyMatters") == "Prime \\(10.75%\\) {hashtag|\\#|MzansiMoneyMatters}"
+
+
+def test_linkedin_posts_with_image(tmp_path, monkeypatch):
+    from social_poster.platforms import linkedin
+
+    monkeypatch.setenv("LINKEDIN_ACCESS_TOKEN", "tok")
+    monkeypatch.delenv("LINKEDIN_AUTHOR", raising=False)
+    calls = []
+    monkeypatch.setattr(linkedin.requests, "get", lambda url, **kw: FakeResp(200, {"sub": "abc"}))
+    monkeypatch.setattr(linkedin.requests, "put", lambda url, **kw: calls.append(("PUT", url)) or FakeResp(201))
+
+    def fake_post(url, **kw):
+        calls.append(("POST", url, kw.get("json")))
+        if "initializeUpload" in url:
+            return FakeResp(200, {"value": {"uploadUrl": "https://up", "image": "urn:li:image:1"}})
+        return FakeResp(201, {}, {"x-restli-id": "urn:li:share:9"})
+
+    monkeypatch.setattr(linkedin.requests, "post", fake_post)
+    q = make_queue(tmp_path, [["a", "approved", "2026-10-21 08:30", "linkedin", "Hi #MMM", "", "", "Rates | Prime"]])
+    run.main([], now=NOW, queue=q)
+    assert statuses(q)["a"] == ("posted", "linkedin: https://www.linkedin.com/feed/update/urn:li:share:9/")
+    post_body = calls[-1][2]
+    assert post_body["author"] == "urn:li:person:abc"
+    assert post_body["content"]["media"]["id"] == "urn:li:image:1"
+    assert ("PUT", "https://up") in calls
