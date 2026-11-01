@@ -29,7 +29,8 @@ Posts can be single images or [carousels](docs/images.md#carousels-several-slide
 1. [Google Sheet queue](docs/setup-google-sheet.md)
 2. [Facebook + Instagram](docs/setup-meta.md)
 3. [X](docs/setup-x.md) and [LinkedIn](docs/setup-linkedin.md) (optional)
-4. Test it: repo → **Actions → Post approved content → Run workflow**, tick *dry run*.
+4. [On-time posting from the sheet](docs/reliable-schedule.md) (recommended)
+5. Test it: repo → **Actions → Post approved content → Run workflow**, tick *dry run*.
    The log lists what would post, without posting.
 
 ## Running locally
