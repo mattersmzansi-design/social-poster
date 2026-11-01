@@ -40,7 +40,7 @@ def publish_post(post) -> tuple[str, str]:
         post.images = make_images(post)
     except Exception as e:
         return "failed", f"image: could not make it ({e})"
-    results, ok = [], True
+    results, ok, skipped = [], True, 0
     for name in post.platforms:
         publisher = PUBLISHERS.get(name)
         if publisher is None:
@@ -51,11 +51,15 @@ def publish_post(post) -> tuple[str, str]:
         try:
             results.append(f"{name}: {publisher(post)}")
         except NotConfigured as e:
-            results.append(f"{name}: not set up ({e})")
-            ok = False
+            # A platform you haven't connected yet is skipped, not a failure,
+            # so drafts can list every platform while setup is still under way.
+            results.append(f"{name}: skipped, not set up ({e})")
+            skipped += 1
         except Exception as e:  # one platform failing must not stop the rest
             results.append(f"{name}: FAILED {e}")
             ok = False
+    if skipped == len(post.platforms):
+        ok = False  # nothing was actually posted
     return ("posted" if ok else "failed"), " | ".join(results)
 
 

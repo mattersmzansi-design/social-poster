@@ -90,14 +90,24 @@ def test_image_title_makes_facebook_post_a_photo(tmp_path, fake_meta):
     assert png.startswith(b"\x89PNG") and mime == "image/png"
 
 
-def test_missing_secrets_and_planned_platforms_are_reported(tmp_path, monkeypatch):
-    monkeypatch.delenv("META_PAGE_ID", raising=False)
-    q = make_queue(tmp_path, [["a", "approved", "2026-10-21 08:30", "facebook, tiktok", "hi", "", ""]])
+def test_unconfigured_platforms_are_skipped_not_failed(tmp_path, fake_meta, monkeypatch):
+    monkeypatch.delenv("LINKEDIN_ACCESS_TOKEN", raising=False)
+    q = make_queue(tmp_path, [["a", "approved", "2026-10-21 08:30", "facebook, linkedin", "hi", "", ""]])
     run.main([], now=NOW, queue=q)
     status, result = statuses(q)["a"]
-    assert status == "failed"
-    assert "facebook: not set up (META_PAGE_ID is not set)" in result
-    assert "tiktok: coming soon" in result
+    assert status == "posted"
+    assert "linkedin: skipped, not set up (LINKEDIN_ACCESS_TOKEN is not set)" in result
+
+
+def test_nothing_configured_or_planned_platform_fails(tmp_path, monkeypatch):
+    monkeypatch.delenv("META_PAGE_ID", raising=False)
+    q = make_queue(tmp_path, [["a", "approved", "2026-10-21 08:30", "facebook", "hi", "", ""]])
+    run.main([], now=NOW, queue=q)
+    assert statuses(q)["a"][0] == "failed"
+    q2 = make_queue(tmp_path, [["b", "approved", "2026-10-21 08:30", "tiktok", "hi", "", ""]])
+    run.main([], now=NOW, queue=q2)
+    status, result = statuses(q2)["b"]
+    assert status == "failed" and "tiktok: coming soon" in result
 
 
 def test_dry_run_changes_nothing(tmp_path, fake_meta):
