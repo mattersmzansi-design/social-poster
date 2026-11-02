@@ -1,0 +1,62 @@
+[
+ {
+  "id": "v1",
+  "text": "When the Reserve Bank moves one number, your whole month moves.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v2",
+  "text": "In September, the repo rate rose to seven point two five percent.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "In September, the repo rate rose to 7.25%."
+ },
+ {
+  "id": "v3",
+  "text": "Banks followed. Prime is now ten point seven five percent.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "Banks followed. Prime is now 10.75%."
+ },
+ {
+  "id": "v4",
+  "text": "From there, the change runs down every line. Your bond. Your car. Your card.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v5",
+  "text": "On a one million rand home loan, that's about ten thousand one hundred and fifty rand a month.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "On a 1 million rand home loan, that's about 10,150 rand a month."
+ },
+ {
+  "id": "v6",
+  "text": "Every quarter point hike adds around one hundred and seventy rand.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v7",
+  "text": "Savers earn a little more. Borrowers pay more.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "Savers earn a little more. Borrowers pay more."
+ },
+ {
+  "id": "v8",
+  "text": "Next stop: the nineteenth of November.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "Next stop, the 19th of November."
+ },
+ {
+  "id": "v9",
+  "text": "Mmzahnsee Money Matters. Know where your money is going.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "Mzansi Money Matters. Know where your money is going."
+ }
+]
