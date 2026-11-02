@@ -83,6 +83,10 @@ def _upload_image(author: str, data: bytes) -> str:
 
 
 def publish_linkedin(post) -> str:
+    if post.video_file:
+        from . import PlatformError
+
+        raise PlatformError("video posts aren't supported here yet")
     author = _author()
     body = {
         "author": author,

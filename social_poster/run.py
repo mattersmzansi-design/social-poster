@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from pathlib import Path
 from datetime import datetime
 
 from .drafts import import_drafts
@@ -19,7 +20,9 @@ MAX_SLIDES = 10
 
 
 def make_images(post) -> list[bytes]:
-    """Carousel slides, or one card, or nothing (media_url / text-only posts)."""
+    """Carousel slides, or one card, or nothing (video, media_url or text-only posts)."""
+    if post.video_file:
+        return []
     if post.slides:
         if len(post.slides) > MAX_SLIDES:
             raise ValueError(f"{len(post.slides)} slides; the most a carousel takes is {MAX_SLIDES}")
@@ -34,7 +37,9 @@ def publish_post(post) -> tuple[str, str]:
     """Returns (status, result). A post is 'posted' only if every platform succeeded."""
     if not post.platforms:
         return "failed", "no platforms listed"
-    if not post.text and not post.media_url:
+    if post.video_file and not Path(post.video_file).is_file():
+        return "failed", f"video_file not found in the repo: {post.video_file}"
+    if not post.text and not post.media_url and not post.video_file:
         return "failed", "nothing to post: text and media_url are both empty"
     try:
         post.images = make_images(post)

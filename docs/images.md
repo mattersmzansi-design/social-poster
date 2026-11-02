@@ -43,3 +43,10 @@ MTBPS 2026 | The budget in 4 slides || Fuel | Levy cut from 4 November || Growth
 - **Instagram** and **Facebook** post all slides; **LinkedIn** posts them as a multi-image post;
   **X** takes the first 4 (its limit).
 - When `slides` is filled in, `image_title` is not used.
+
+## Videos (Reels / shorts)
+Put the video in the repo's `media/` folder (MP4, vertical 9:16, under 90 seconds for Reels) and
+fill in the sheet column **video_file**, e.g. `media/enron-short.mp4`.
+- **Facebook** posts it as a Page video; **Instagram** posts it as a Reel (also shown in the feed).
+- Instagram processes videos before publishing, so these posts can take a few minutes.
+- X and LinkedIn don't take videos from this tool yet.

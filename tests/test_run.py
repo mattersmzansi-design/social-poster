@@ -334,3 +334,53 @@ def test_import_drafts_adds_new_rows_once_as_draft(tmp_path, fake_meta):
     assert fake_meta == []
     run.main(["--import-drafts", str(drafts)], now=NOW, queue=q)
     assert [p.id for p in q.load()].count("new1") == 1
+
+
+def make_video_queue(tmp_path, platforms, video="clip.mp4"):
+    (tmp_path / "clip.mp4").write_bytes(b"\x00\x00\x00\x18ftypmp42fake")
+    path = tmp_path / "queue.csv"
+    with open(path, "w", newline="") as f:
+        csv.writer(f).writerows([HEADER + ["video_file"], ["v", "approved", "2026-10-21 08:30", platforms, "Caption", "", "", "", str(tmp_path / video)]])
+    return CsvQueue(str(path))
+
+
+def test_video_goes_to_facebook_and_instagram_reel(tmp_path, fake_meta, monkeypatch):
+    uploads = []
+
+    def fake_post(url, **kw):
+        uploads.append(url)
+        if "graph-video.facebook.com" in url:
+            assert kw["data"]["description"] == "Caption" and "source" in kw["files"]
+            return FakeResp(200, {"id": "vid1"})
+        assert kw["headers"]["offset"] == "0" and kw["headers"]["file_size"] == str(len(kw["data"]))
+        return FakeResp(200, {"success": True})
+
+    monkeypatch.setattr(meta.requests, "post", fake_post)
+    monkeypatch.setattr(meta, "_get", lambda *a, **k: {"status_code": "FINISHED", "permalink": "https://instagram.com/reel/r1"})
+    monkeypatch.setattr(meta.time, "sleep", lambda s: None)
+    q = make_video_queue(tmp_path, "facebook, instagram")
+    run.main([], now=NOW, queue=q)
+    status, result = statuses(q)["v"]
+    assert status == "posted"
+    assert "facebook: https://www.facebook.com/123/videos/vid1" in result
+    assert "instagram: https://instagram.com/reel/r1" in result
+    reel = [c for c in fake_meta if c[0] == "456/media"][0][1]
+    assert reel["media_type"] == "REELS" and reel["upload_type"] == "resumable"
+    assert any("rupload.facebook.com" in u for u in uploads)
+
+
+def test_video_processing_error_is_reported(tmp_path, fake_meta, monkeypatch):
+    monkeypatch.setattr(meta.requests, "post", lambda url, **kw: FakeResp(200, {"success": True}))
+    monkeypatch.setattr(meta, "_get", lambda *a, **k: {"status_code": "ERROR"})
+    q = make_video_queue(tmp_path, "instagram")
+    run.main([], now=NOW, queue=q)
+    status, result = statuses(q)["v"]
+    assert status == "failed" and "couldn't process the video (ERROR)" in result
+
+
+def test_missing_video_file_fails_before_posting(tmp_path, fake_meta):
+    q = make_video_queue(tmp_path, "facebook", video="nope.mp4")
+    run.main([], now=NOW, queue=q)
+    status, result = statuses(q)["v"]
+    assert status == "failed" and "video_file not found" in result
+    assert fake_meta == []

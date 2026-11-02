@@ -87,6 +87,10 @@ def _check(resp: requests.Response) -> dict:
 
 
 def publish_x(post) -> str:
+    if post.video_file:
+        from . import PlatformError
+
+        raise PlatformError("video posts aren't supported here yet")
     from . import PlatformError
 
     auth = _auth()

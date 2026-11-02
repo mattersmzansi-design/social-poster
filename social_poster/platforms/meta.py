@@ -67,7 +67,62 @@ def _host_image(png: bytes) -> str:
     return max(images, key=lambda i: i.get("width", 0))["source"]
 
 
+def _version() -> str:
+    return os.environ.get("META_GRAPH_VERSION", "v26.0")
+
+
+def _publish_facebook_video(post) -> str:
+    from . import PlatformError
+
+    page_id = _cfg("META_PAGE_ID")
+    with open(post.video_file, "rb") as f:
+        resp = requests.post(
+            f"https://graph-video.facebook.com/{_version()}/{page_id}/videos",
+            data={"description": post.text, "access_token": _cfg("META_PAGE_TOKEN")},
+            files={"source": (os.path.basename(post.video_file), f, "video/mp4")},
+            timeout=600,
+        )
+    body = resp.json() if resp.content else {}
+    if resp.status_code >= 400 or "error" in body:
+        raise PlatformError(f"Meta said: {body.get('error', {}).get('message', resp.text[:300])}")
+    return f"https://www.facebook.com/{page_id}/videos/{body['id']}"
+
+
+def _publish_instagram_reel(post) -> str:
+    """Reels upload straight to Instagram (resumable upload), then wait for processing."""
+    from . import PlatformError
+
+    ig_user = _cfg("META_IG_USER_ID")
+    created = _graph(f"{ig_user}/media", media_type="REELS", upload_type="resumable",
+                     caption=post.text, share_to_feed="true")
+    container = created["id"]
+    upload_url = created.get("uri") or f"https://rupload.facebook.com/ig-api-upload/{_version()}/{container}"
+    with open(post.video_file, "rb") as f:
+        data = f.read()
+    resp = requests.post(upload_url, data=data, timeout=600, headers={
+        "Authorization": f"OAuth {_cfg('META_PAGE_TOKEN')}",
+        "offset": "0",
+        "file_size": str(len(data)),
+    })
+    if resp.status_code >= 400:
+        raise PlatformError(f"Instagram video upload failed ({resp.status_code}): {resp.text[:300]}")
+    # Instagram processes the video before it can be published; this can take a few minutes.
+    for _ in range(60):
+        status = _get(container, fields="status_code,status").get("status_code")
+        if status == "FINISHED":
+            break
+        if status in ("ERROR", "EXPIRED"):
+            raise PlatformError(f"Instagram couldn't process the video ({status})")
+        time.sleep(10)
+    else:
+        raise PlatformError("Instagram was still processing the video after 10 minutes")
+    media_id = _graph(f"{ig_user}/media_publish", creation_id=container)["id"]
+    return _get(media_id, fields="permalink").get("permalink") or f"instagram media {media_id}"
+
+
 def publish_facebook(post) -> str:
+    if post.video_file:
+        return _publish_facebook_video(post)
     page_id = _cfg("META_PAGE_ID")
     if len(post.images) > 1:
         photo_ids = [_upload_unpublished(png) for png in post.images]
@@ -87,6 +142,8 @@ def publish_facebook(post) -> str:
 def publish_instagram(post) -> str:
     from . import PlatformError
 
+    if post.video_file:
+        return _publish_instagram_reel(post)
     ig_user = _cfg("META_IG_USER_ID")
     if len(post.images) > 1:
         children = [

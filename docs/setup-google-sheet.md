@@ -28,6 +28,7 @@
 | result | leave empty: the tool writes the post links or the error here |
 | image_title | optional: headline for an automatic branded image, e.g. `Rates \| Prime is now 10.75%`. See [images](images.md). |
 | slides | optional: a carousel, slides separated by `\|\|`. See [images](images.md#carousels-several-slides). |
+| video_file | optional: a video in the repo, e.g. `media/enron-short.mp4`. See [videos](images.md#videos-reels--shorts). |
 | x_text | optional: your own X version (280 characters). Made from `text` if empty. |
 | sources | optional: where each fact came from, so you can check before approving. The tool ignores it. |
 
