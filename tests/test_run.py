@@ -384,3 +384,12 @@ def test_missing_video_file_fails_before_posting(tmp_path, fake_meta):
     status, result = statuses(q)["v"]
     assert status == "failed" and "video_file not found" in result
     assert fake_meta == []
+
+
+def test_post_now_posts_one_draft_to_chosen_platforms(tmp_path, fake_meta):
+    q = make_queue(tmp_path, [["d", "draft", "2026-12-01 08:00", "facebook, instagram, x", "hi", "", ""],
+                              ["e", "draft", "2026-12-01 08:00", "facebook", "other", "", ""]])
+    run.main(["--post-now", "d", "--platforms", "facebook"], now=NOW, queue=q)
+    s = statuses(q)
+    assert s["d"] == ("posted", "facebook: https://www.facebook.com/id-for-feed")
+    assert s["e"][0] == "draft" and len(fake_meta) == 1

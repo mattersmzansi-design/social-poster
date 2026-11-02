@@ -72,6 +72,8 @@ def main(argv: list[str] | None = None, now: datetime | None = None, queue=None)
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--import-drafts", metavar="FOLDER", help="first add new draft files from FOLDER to the sheet")
+    parser.add_argument("--post-now", metavar="ID", help="post this row immediately (the owner's direct approval), ignoring status and time")
+    parser.add_argument("--platforms", help="with --post-now: only these platforms, comma-separated")
     args = parser.parse_args(argv)
 
     now = now or datetime.now(SAST)
@@ -86,7 +88,20 @@ def main(argv: list[str] | None = None, now: datetime | None = None, queue=None)
             if not args.dry_run:
                 queue.mark(post, "failed", "post_at is empty or not a date like 2026-10-21 08:30")
 
-    due = [p for p in posts if p.is_due(now)]
+    if args.post_now:
+        match = [p for p in posts if p.id == args.post_now]
+        if not match:
+            print(f"[{args.post_now}] not found in the sheet")
+            return 1
+        post = match[0]
+        if post.status == "posted" and not args.platforms:
+            print(f"[{post.id}] already posted: {post.platforms}")
+            return 1
+        if args.platforms:
+            post.platforms = [p.strip().lower() for p in args.platforms.split(",") if p.strip()]
+        due = [post]
+    else:
+        due = [p for p in posts if p.is_due(now)]
     print(f"{len(posts)} rows, {len(due)} approved and due at {now:%Y-%m-%d %H:%M} SAST")
     for post in due:
         if args.dry_run:
