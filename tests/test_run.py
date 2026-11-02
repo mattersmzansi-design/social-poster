@@ -393,3 +393,10 @@ def test_post_now_posts_one_draft_to_chosen_platforms(tmp_path, fake_meta):
     s = statuses(q)
     assert s["d"] == ("posted", "facebook: https://www.facebook.com/id-for-feed")
     assert s["e"][0] == "draft" and len(fake_meta) == 1
+
+
+def test_post_now_extra_platform_keeps_earlier_links(tmp_path, fake_meta):
+    q = make_queue(tmp_path, [["d", "posted", "2026-10-01 08:00", "facebook", "hi", "https://x/img.jpg", "facebook: https://fb/1"]])
+    run.main(["--post-now", "d", "--platforms", "instagram"], now=NOW, queue=q)
+    status, result = statuses(q)["d"]
+    assert status == "posted" and result.startswith("facebook: https://fb/1 | instagram: ")

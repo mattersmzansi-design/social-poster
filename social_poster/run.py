@@ -110,6 +110,10 @@ def main(argv: list[str] | None = None, now: datetime | None = None, queue=None)
         # Mark first so a crash mid-post can't cause a double post on the next run.
         queue.mark(post, "posting", "")
         status, result = publish_post(post)
+        if args.post_now and post.result and args.platforms:
+            # posting an extra platform later: keep the earlier links
+            result = post.result + " | " + result
+            status = "posted" if status == "posted" or "posted" in post.status else status
         queue.mark(post, status, result)
         print(f"[{post.id}] {status}: {result}")
     return 0

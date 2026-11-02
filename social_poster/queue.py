@@ -37,6 +37,7 @@ class Post:
     platforms: list[str]
     text: str
     media_url: str
+    result: str = ""  # what's already in the result column
     image_title: str = ""
     x_text: str = ""
     slides: list[str] = field(default_factory=list)
@@ -89,6 +90,7 @@ def rows_to_posts(rows: list[list[str]]) -> list[Post]:
                 platforms=[p.strip().lower() for p in cell["platforms"].split(",") if p.strip()],
                 text=cell["text"],
                 media_url=cell["media_url"],
+                result=cell.get("result", ""),
                 image_title=cell.get("image_title", ""),
                 x_text=cell.get("x_text", ""),
                 slides=[s.strip() for s in cell.get("slides", "").split("||") if s.strip()],
