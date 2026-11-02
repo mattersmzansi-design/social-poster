@@ -14,3 +14,13 @@ simplified to 2D.
   percussion, foley and bed, ducked; master with ffmpeg loudnorm to -14 LUFS).
 
 Output goes to `../media/` and is posted through a `video_file` row in the sheet.
+
+## Setting up a fresh machine
+1. `git clone --depth 1 https://github.com/lemomo-ai/lemo-opuscar <dir>`, then in it: `npm install`,
+   `python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt -r requirements-voice.txt`,
+   `sh tools/fetch.sh voice` (Kokoro model, ~350 MB).
+2. Voice: `.venv/bin/python core/tts/tts.py lines.json voice/` (in the lemo dir).
+3. Render with `tools/video.mjs` (2D) or `tools/render3d.mjs` (3D; needs `<lemo>/node_modules` for
+   playwright-core and three). Chromium: `/opt/pw-browsers/chromium-1194/chrome-linux/chrome`.
+4. Mix with `tools/mix.py` / `tools/mix3d.py` (lemo venv), master:
+   `ffmpeg -i picture.mp4 -i mix.wav -af loudnorm=I=-14:TP=-1.5:LRA=11 -c:v copy -c:a aac out.mp4`.
