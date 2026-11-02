@@ -116,11 +116,12 @@ def _wait_and_publish(ig_user: str, container: str) -> str:
 
     # Instagram processes the video before it can be published; this can take a few minutes.
     for _ in range(60):
-        status = _get(container, fields="status_code,status").get("status_code")
+        info = _get(container, fields="status_code,status")
+        status = info.get("status_code")
         if status == "FINISHED":
             break
         if status in ("ERROR", "EXPIRED"):
-            raise PlatformError(f"Instagram couldn't process the video ({status})")
+            raise PlatformError(f"Instagram couldn't process the video ({status}: {info.get('status', 'no detail')})")
         time.sleep(10)
     else:
         raise PlatformError("Instagram was still processing the video after 10 minutes")
@@ -148,12 +149,13 @@ def _publish_instagram_reel(post) -> str:
         })
         if resp.status_code >= 400:
             raise PlatformError(f"Instagram video upload failed ({resp.status_code}): {resp.text[:200]}")
+        return _wait_and_publish(ig_user, container)
     except PlatformError as direct_error:
         try:
             url = _facebook_hosted_video_url(post)
             container = _graph(f"{ig_user}/media", media_type="REELS", video_url=url,
                                caption=post.text, share_to_feed="true")["id"]
-        except PlatformError as e:
+        except Exception as e:  # report both routes' reasons
             raise PlatformError(f"{e} (direct upload also failed: {direct_error})")
     return _wait_and_publish(ig_user, container)
 

@@ -375,7 +375,7 @@ def test_video_processing_error_is_reported(tmp_path, fake_meta, monkeypatch):
     q = make_video_queue(tmp_path, "instagram")
     run.main([], now=NOW, queue=q)
     status, result = statuses(q)["v"]
-    assert status == "failed" and "couldn't process the video (ERROR)" in result
+    assert status == "failed" and "couldn't process the video (ERROR" in result
 
 
 def test_missing_video_file_fails_before_posting(tmp_path, fake_meta):
