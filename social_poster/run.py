@@ -113,7 +113,7 @@ def main(argv: list[str] | None = None, now: datetime | None = None, queue=None)
         if args.post_now and post.result and args.platforms:
             # posting an extra platform later: keep the earlier links
             result = post.result + " | " + result
-            status = "posted" if status == "posted" or "posted" in post.status else status
+            # the row stays "posted" for what already went out; a failure shows in result
         queue.mark(post, status, result)
         print(f"[{post.id}] {status}: {result}")
     return 0

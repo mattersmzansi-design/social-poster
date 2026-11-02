@@ -400,3 +400,20 @@ def test_post_now_extra_platform_keeps_earlier_links(tmp_path, fake_meta):
     run.main(["--post-now", "d", "--platforms", "instagram"], now=NOW, queue=q)
     status, result = statuses(q)["d"]
     assert status == "posted" and result.startswith("facebook: https://fb/1 | instagram: ")
+
+
+def test_reel_falls_back_to_facebook_hosted_link(tmp_path, fake_meta, monkeypatch):
+    def fake_post(url, **kw):
+        if "rupload" in url:
+            return FakeResp(400, {"debug_info": {"type": "ProcessingFailedError"}})
+        assert kw["data"]["published"] == "false"
+        return FakeResp(200, {"id": "hidden1"})
+
+    monkeypatch.setattr(meta.requests, "post", fake_post)
+    monkeypatch.setattr(meta, "_get", lambda path, **k: {"source": "https://video.cdn/x.mp4"} if path == "hidden1" else {"status_code": "FINISHED", "permalink": "https://instagram.com/reel/r2"})
+    monkeypatch.setattr(meta.time, "sleep", lambda s: None)
+    q = make_video_queue(tmp_path, "instagram")
+    run.main([], now=NOW, queue=q)
+    assert statuses(q)["v"] == ("posted", "instagram: https://instagram.com/reel/r2")
+    reels = [c[1] for c in fake_meta if c[0] == "456/media"]
+    assert reels[-1]["video_url"] == "https://video.cdn/x.mp4"
