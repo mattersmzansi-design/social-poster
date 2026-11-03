@@ -49,5 +49,5 @@ jobs:
         run: >-
           python -m social_poster.run --import-drafts drafts
           ${{ inputs.dry_run && '--dry-run' || '' }}
-          ${{ inputs.post_now && format('--post-now {0}', inputs.post_now) || '' }}
-          ${{ inputs.platforms && format('--platforms {0}', inputs.platforms) || '' }}
+          ${{ inputs.post_now && format('--post-now "{0}"', inputs.post_now) || '' }}
+          ${{ inputs.platforms && format('--platforms "{0}"', inputs.platforms) || '' }}
