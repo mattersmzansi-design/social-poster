@@ -417,3 +417,12 @@ def test_reel_falls_back_to_facebook_hosted_link(tmp_path, fake_meta, monkeypatc
     assert statuses(q)["v"] == ("posted", "instagram: https://instagram.com/reel/r2")
     reels = [c[1] for c in fake_meta if c[0] == "456/media"]
     assert reels[-1]["video_url"] == "https://video.cdn/x.mp4"
+
+
+def test_post_now_accepts_several_ids(tmp_path, fake_meta):
+    q = make_queue(tmp_path, [["a", "draft", "2026-12-01 08:00", "facebook", "one", "", ""],
+                              ["b", "draft", "2026-12-01 08:00", "facebook", "two", "", ""],
+                              ["c", "draft", "2026-12-01 08:00", "facebook", "three", "", ""]])
+    run.main(["--post-now", "a, c"], now=NOW, queue=q)
+    s = statuses(q)
+    assert s["a"][0] == "posted" and s["c"][0] == "posted" and s["b"][0] == "draft"

@@ -89,17 +89,20 @@ def main(argv: list[str] | None = None, now: datetime | None = None, queue=None)
                 queue.mark(post, "failed", "post_at is empty or not a date like 2026-10-21 08:30")
 
     if args.post_now:
-        match = [p for p in posts if p.id == args.post_now]
-        if not match:
-            print(f"[{args.post_now}] not found in the sheet")
-            return 1
-        post = match[0]
-        if post.status == "posted" and not args.platforms:
-            print(f"[{post.id}] already posted: {post.platforms}")
-            return 1
-        if args.platforms:
-            post.platforms = [p.strip().lower() for p in args.platforms.split(",") if p.strip()]
-        due = [post]
+        # one id, or several separated by commas
+        due = []
+        for pid in [x.strip() for x in args.post_now.split(",") if x.strip()]:
+            match = [p for p in posts if p.id == pid]
+            if not match:
+                print(f"[{pid}] not found in the sheet")
+                continue
+            post = match[0]
+            if post.status == "posted" and not args.platforms:
+                print(f"[{post.id}] already posted")
+                continue
+            if args.platforms:
+                post.platforms = [p.strip().lower() for p in args.platforms.split(",") if p.strip()]
+            due.append(post)
     else:
         due = [p for p in posts if p.is_due(now)]
     print(f"{len(posts)} rows, {len(due)} approved and due at {now:%Y-%m-%d %H:%M} SAST")
