@@ -1,0 +1,60 @@
+[
+ {
+  "id": "v1",
+  "text": "You voted on the fourth of November. Here's how that vote reaches your rates bill.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "You voted on the 4th of November. Here's how that vote reaches your rates bill."
+ },
+ {
+  "id": "v2",
+  "text": "First, the results. The IEC has seven days to declare them.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v3",
+  "text": "Then the new council meets and elects a mayor. Where no party has more than half the seats, that takes a coalition deal.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v4",
+  "text": "From the council, the lines run to your house. Property rates. Water. Refuse. Electricity.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v5",
+  "text": "Electricity is different. The regulator, NERSA, must approve every increase.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v6",
+  "text": "Around the end of March, the mayor tables a draft budget, and residents can comment.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v7",
+  "text": "Council must approve it before the first of July, with the new tariffs.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "Council must approve it before the 1st of July, with the new tariffs."
+ },
+ {
+  "id": "v8",
+  "text": "On the first of July twenty twenty-seven, the new rates reach your bill. Next stop: twenty thirty-one.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "On the 1st of July 2027, the new rates reach your bill. Next stop, 2031."
+ },
+ {
+  "id": "v9",
+  "text": "Mmzahnsee Money Matters. Know who sets your rates.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "Mzansi Money Matters. Know who sets your rates."
+ }
+]
