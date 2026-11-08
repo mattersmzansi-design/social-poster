@@ -1,0 +1,57 @@
+[
+ {
+  "id": "v1",
+  "text": "South Africa's 2026 local elections, in numbers.",
+  "voice": "am_michael",
+  "speed": 1.0,
+  "asr": "South Africa's 2026 local elections, in numbers."
+ },
+ {
+  "id": "v2",
+  "text": "Nationally, the ANC fell from forty-five point six percent to thirty point eight. The DA rose to twenty-four point six.",
+  "voice": "am_michael",
+  "speed": 1.0,
+  "asr": "Nationally, the ANC fell from 45.6% to 30.8%. The DA rose to 24.6%."
+ },
+ {
+  "id": "v3",
+  "text": "The MK Party took nine point eight percent in its first local election. The EFF fell to six point two, and ActionSA rose to five point seven.",
+  "voice": "am_michael",
+  "speed": 1.0,
+  "asr": "The MK Party took 9.8% in its first local election. The EFF fell to 6.2%, and ActionSA rose to 5.7%."
+ },
+ {
+  "id": "v4",
+  "text": "Turnout climbed to fifty-two percent. Almost fifteen million people voted.",
+  "voice": "am_michael",
+  "speed": 1.0,
+  "asr": "Turnout climbed to 52%. Almost 15 million people voted."
+ },
+ {
+  "id": "v5",
+  "text": "But the biggest number is this. One hundred and thirty-seven of two hundred and thirteen councils are hung.",
+  "voice": "am_michael",
+  "speed": 1.0,
+  "asr": "But the biggest number is this. 137 of 213 councils are hung."
+ },
+ {
+  "id": "v6",
+  "text": "In the metros, only Cape Town has one party with a majority. The other seven need coalitions.",
+  "voice": "am_michael",
+  "speed": 1.0
+ },
+ {
+  "id": "v7",
+  "text": "And those coalitions will set your rates, water and electricity tariffs from July twenty twenty-seven.",
+  "voice": "am_michael",
+  "speed": 1.0,
+  "asr": "And those coalitions will set your rates, water and electricity tariffs from July 2027."
+ },
+ {
+  "id": "v8",
+  "text": "Mmzahnsee Money Matters. Know who sets your rates.",
+  "voice": "am_michael",
+  "speed": 1.0,
+  "asr": "Mzansi Money Matters. Know who sets your rates."
+ }
+]
