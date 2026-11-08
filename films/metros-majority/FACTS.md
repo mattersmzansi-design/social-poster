@@ -17,7 +17,9 @@ The chart shows the LARGEST party's seats, which is not always the governing par
 | Buffalo City | ANC 73/89 | ANC 73/89 | ANC 71/100 | ANC 60/100 | ANC 61/100 | ANC 42/100 |
 | Mangaung | ANC 60/86 | ANC 65/89 | ANC 65/97 | ANC 58/100 | ANC 51/101 | ANC 35/101 |
 
-Metros with a single-party majority: 7, 7, 8, 4, 3, 1.
+Metros with a single-party majority: 5 of 6 (2000), 5 of 6 (2006), 8 of 8 (2011), 4 of 8 (2016), 3 of 8 (2021), 1 of 8 (2026).
+Buffalo City and Mangaung are shown as 'not yet a metro' for 2000 and 2006.
+Colours: ANC yellow with black outline, DA blue, MK green; Nelson Mandela Bay 2021 split bar (ANC 48 = DA 48). Every bar is labelled with the party name.
 
 Sources:
 - 2000–2021: Wikipedia "City of Johannesburg elections", "City of Cape Town elections", "City of Tshwane elections",
