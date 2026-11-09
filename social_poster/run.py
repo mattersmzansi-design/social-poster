@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 
-from .drafts import import_drafts
+from .drafts import import_drafts, latest_draft
 from .images import render_card
 from .platforms import PLANNED, PUBLISHERS, NotConfigured
 from .queue import SAST, queue_from_env
@@ -68,6 +68,17 @@ def publish_post(post) -> tuple[str, str]:
     return ("posted" if ok else "failed"), " | ".join(results)
 
 
+def refresh_from_draft(post, draft: dict | None) -> None:
+    """Use the repo's latest wording: the sheet keeps the text from when a draft was first imported."""
+    if not draft:
+        return
+    for field in ("text", "image_title", "x_text", "video_file", "media_url"):
+        if field in draft:
+            setattr(post, field, draft[field])
+    if "slides" in draft:
+        post.slides = [s.strip() for s in draft["slides"].split("||") if s.strip()]
+
+
 def main(argv: list[str] | None = None, now: datetime | None = None, queue=None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
@@ -97,6 +108,8 @@ def main(argv: list[str] | None = None, now: datetime | None = None, queue=None)
                 print(f"[{pid}] not found in the sheet")
                 continue
             post = match[0]
+            if args.import_drafts:
+                refresh_from_draft(post, latest_draft(args.import_drafts, post.id))
             if post.status == "posted" and not args.platforms:
                 print(f"[{post.id}] already posted")
                 continue

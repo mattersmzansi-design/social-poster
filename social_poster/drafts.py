@@ -31,3 +31,15 @@ def import_drafts(queue, folder: str, dry_run: bool = False) -> list[str]:
             added += [r["id"] for r in new]
         queue.mark_imported(path.name)
     return added
+
+
+def latest_draft(folder: str, post_id: str) -> dict | None:
+    """The newest version of a draft row in the repo's draft files (edits made after import)."""
+    found = None
+    for path in sorted(Path(folder).glob("*.csv")):
+        with open(path, newline="", encoding="utf-8") as f:
+            for r in csv.DictReader(f):
+                r = {k.strip().lower(): (v or "") for k, v in r.items() if k}
+                if r.get("id") == post_id:
+                    found = r
+    return found

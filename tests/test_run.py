@@ -426,3 +426,16 @@ def test_post_now_accepts_several_ids(tmp_path, fake_meta):
     run.main(["--post-now", "a, c"], now=NOW, queue=q)
     s = statuses(q)
     assert s["a"][0] == "posted" and s["c"][0] == "posted" and s["b"][0] == "draft"
+
+
+def test_post_now_uses_latest_draft_wording(tmp_path, monkeypatch):
+    """Edits to a draft file after it was imported must reach the post (the sheet keeps the old text)."""
+    from social_poster import run as runmod
+    d = tmp_path / "drafts"; d.mkdir()
+    (d / "w.csv").write_text("id,status,post_at,platforms,text,slides\nx1,draft,2026-11-09 07:30,facebook,NEW TEXT,A | b || C | d\n", encoding="utf-8")
+    from social_poster.queue import Post
+    p = Post(row=2, id="x1", status="draft", post_at=None, platforms=["facebook"], text="OLD TEXT", media_url="")
+    runmod.refresh_from_draft(p, runmod.latest_draft(str(d), "x1"))
+    assert p.text == "NEW TEXT" and p.slides == ["A | b", "C | d"]
+    runmod.refresh_from_draft(p, runmod.latest_draft(str(d), "missing"))
+    assert p.text == "NEW TEXT"
