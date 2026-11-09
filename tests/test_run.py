@@ -439,3 +439,9 @@ def test_post_now_uses_latest_draft_wording(tmp_path, monkeypatch):
     assert p.text == "NEW TEXT" and p.slides == ["A | b", "C | d"]
     runmod.refresh_from_draft(p, runmod.latest_draft(str(d), "missing"))
     assert p.text == "NEW TEXT"
+
+
+def test_market_card_blocks_advice_words():
+    from social_poster.market_card import check_words
+    assert check_words({"pocket": "You should buy gold now"}) == ["buy", "should"]
+    assert check_words({"us_close": ["Chips rebound after last week's sell-off"]}) == []
