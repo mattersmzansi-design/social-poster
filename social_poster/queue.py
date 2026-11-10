@@ -13,6 +13,7 @@ Optional:
   x_text      - short version for X (280 characters); made from `text` if empty
   slides      - a carousel: slides separated by ||, each like "Kicker | Headline" (2-10 slides)
   video_file  - a video in this repo, e.g. media/enron-short.mp4 (Facebook video, Instagram Reel)
+  image_file  - ready-made image(s) in this repo, comma-separated, e.g. media/market-am.png
   sources     - notes for you; ignored by the tool
 """
 from __future__ import annotations
@@ -42,6 +43,7 @@ class Post:
     x_text: str = ""
     slides: list[str] = field(default_factory=list)
     video_file: str = ""
+    image_file: str = ""  # ready-made image(s) in this repo, comma-separated (e.g. market cards)
     images: list[bytes] = field(default_factory=list)  # PNGs made at posting time
 
     def is_due(self, now: datetime) -> bool:
@@ -95,6 +97,7 @@ def rows_to_posts(rows: list[list[str]]) -> list[Post]:
                 x_text=cell.get("x_text", ""),
                 slides=[s.strip() for s in cell.get("slides", "").split("||") if s.strip()],
                 video_file=cell.get("video_file", ""),
+                image_file=cell.get("image_file", ""),
             )
         )
     return posts

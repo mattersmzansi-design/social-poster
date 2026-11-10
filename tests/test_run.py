@@ -445,3 +445,11 @@ def test_market_card_blocks_advice_words():
     from social_poster.market_card import check_words
     assert check_words({"pocket": "You should buy gold now"}) == ["buy", "should"]
     assert check_words({"us_close": ["Chips rebound after last week's sell-off"]}) == []
+
+
+def test_image_file_is_used_as_is(tmp_path):
+    from social_poster.run import make_images
+    from social_poster.queue import Post
+    f = tmp_path / "card.png"; f.write_bytes(b"PNGDATA")
+    p = Post(row=2, id="m", status="approved", post_at=None, platforms=["facebook"], text="x", media_url="", image_file=str(f))
+    assert make_images(p) == [b"PNGDATA"]

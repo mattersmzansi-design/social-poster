@@ -23,6 +23,8 @@ def make_images(post) -> list[bytes]:
     """Carousel slides, or one card, or nothing (video, media_url or text-only posts)."""
     if post.video_file:
         return []
+    if post.image_file:
+        return [Path(f.strip()).read_bytes() for f in post.image_file.split(",") if f.strip()]
     if post.slides:
         if len(post.slides) > MAX_SLIDES:
             raise ValueError(f"{len(post.slides)} slides; the most a carousel takes is {MAX_SLIDES}")
@@ -39,6 +41,9 @@ def publish_post(post) -> tuple[str, str]:
         return "failed", "no platforms listed"
     if post.video_file and not Path(post.video_file).is_file():
         return "failed", f"video_file not found in the repo: {post.video_file}"
+    for f in [x.strip() for x in post.image_file.split(",") if x.strip()]:
+        if not Path(f).is_file():
+            return "failed", f"image_file not found in the repo: {f}"
     if not post.text and not post.media_url and not post.video_file:
         return "failed", "nothing to post: text and media_url are both empty"
     try:
@@ -72,7 +77,7 @@ def refresh_from_draft(post, draft: dict | None) -> None:
     """Use the repo's latest wording: the sheet keeps the text from when a draft was first imported."""
     if not draft:
         return
-    for field in ("text", "image_title", "x_text", "video_file", "media_url"):
+    for field in ("text", "image_title", "x_text", "video_file", "media_url", "image_file"):
         if field in draft:
             setattr(post, field, draft[field])
     if "slides" in draft:
