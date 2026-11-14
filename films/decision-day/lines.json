@@ -1,0 +1,61 @@
+[
+ {
+  "id": "v1",
+  "text": "On Thursday, the Reserve Bank decides what borrowing will cost you.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v2",
+  "text": "Four lines feed into that decision. Fuel. Food. The rand. And interest rates overseas.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v3",
+  "text": "Together they drive inflation. In September, it was four point five percent. The target is three.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "Together they drive inflation. In September, it was 4.5%. The target is 3."
+ },
+ {
+  "id": "v4",
+  "text": "The repo rate is seven point two five percent, and prime is ten point seven five.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "The repo rate is 7.25%, and prime is 10.75."
+ },
+ {
+  "id": "v5",
+  "text": "Economists are split between a hold and another hike.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v6",
+  "text": "If rates hold, a one million rand home loan stays at about ten thousand one hundred and fifty rand a month.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "If rates hold, a 1 million rand home loan stays at about 10,150 rand a month."
+ },
+ {
+  "id": "v7",
+  "text": "A quarter point hike adds about one hundred and seventy rand.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "A quarter point hike adds about 170 rand."
+ },
+ {
+  "id": "v8",
+  "text": "New inflation figures land on Wednesday. The decision follows on Thursday afternoon.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v9",
+  "text": "Mmzahnsee Money Matters. Know where your money is going.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "Mzansi Money Matters. Know where your money is going."
+ }
+]
