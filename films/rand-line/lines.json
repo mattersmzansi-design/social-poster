@@ -1,0 +1,61 @@
+[
+ {
+  "id": "v1",
+  "text": "This month, the rand slipped from about sixteen fifty to about seventeen fifty to the dollar.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "This month, the rand slipped from about 16.50 to about 17.50 to the dollar."
+ },
+ {
+  "id": "v2",
+  "text": "That one number travels through your whole budget.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v3",
+  "text": "Fuel first. Oil is priced in dollars, so a ninety dollar barrel now costs about ninety rand more.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "Fuel first. Oil is priced in dollars, so a $90 barrel now costs about R90 more."
+ },
+ {
+  "id": "v4",
+  "text": "Imports next. A phone priced at five hundred dollars costs about five hundred rand more.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "Imports next. A phone priced at $500 costs about R500 more."
+ },
+ {
+  "id": "v5",
+  "text": "Dearer fuel raises transport costs, and over time, food prices.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v6",
+  "text": "It all flows into inflation, already five point two percent.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "It all flows into inflation, already 5.2%."
+ },
+ {
+  "id": "v7",
+  "text": "And inflation is what the Reserve Bank watches when it sets interest rates.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v8",
+  "text": "The rand moves both ways. When it firms, these costs ease.",
+  "voice": "am_michael",
+  "speed": 0.98
+ },
+ {
+  "id": "v9",
+  "text": "Mmzahnsee Money Matters. Know where your money is going.",
+  "voice": "am_michael",
+  "speed": 0.98,
+  "asr": "Mzansi Money Matters. Know where your money is going."
+ }
+]
